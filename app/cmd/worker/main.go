@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	log.Println("Service service_worker start")
+	log.Println("Service worker start")
 
 	// Создаем канал для обработки сигналов
 	sigChan := make(chan os.Signal, 1)

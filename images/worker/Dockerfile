@@ -5,11 +5,10 @@ RUN apk update && apk upgrade && \
 
 WORKDIR /app
 
-COPY ./service_worker ./service_worker
-COPY ./service_projection_worker ./service_projection_worker
+COPY ./app .
 
-RUN go build -o builded/worker service_worker/cmd/main.go
-RUN go build -o builded/projection_worker service_projection_worker/cmd/main.go
+RUN go build -o /app_build/worker cmd/worker/main.go
+RUN go build -o /app_build/projection_worker cmd/projection_worker/main.go
 
 FROM alpine:latest
 
@@ -17,6 +16,6 @@ RUN apk --no-cache add ca-certificates
 
 WORKDIR /app
 
-COPY --from=builder /app/builded /app
+COPY --from=builder /app_build /app
 
 CMD /app/worker & /app/projection_worker

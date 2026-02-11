@@ -5,11 +5,10 @@ RUN apk update && apk upgrade && \
 
 WORKDIR /app
 
-COPY ./service_web ./service_web
-COPY ./service_callback ./service_callback
+COPY ./app .
 
-RUN go build -o builded/web service_web/cmd/main.go
-RUN go build -o builded/callback service_callback/cmd/main.go
+RUN go build -o /app_build/web cmd/web/main.go
+RUN go build -o /app_build/callback cmd/callback/main.go
 
 FROM alpine:latest
 
@@ -17,7 +16,7 @@ RUN apk --no-cache add ca-certificates
 
 WORKDIR /app
 
-COPY --from=builder /app/builded /app
+COPY --from=builder /app_build /app
 
 EXPOSE 80 81
 
