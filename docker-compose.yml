@@ -1,4 +1,23 @@
 services:
+
+  # Dev контейнер для запуска sqlc, go mod и go run
+  dev:
+    build:
+      context: .
+      dockerfile: images/api/Dockerfile.dev
+    ports:
+      - "85:80"
+      - "86:81"
+    volumes:
+      - ./app:/app
+    environment:
+      - KAFKA_BROKERS=kafka:9092
+    depends_on:
+      - db
+      - kafka
+    networks:
+      - payway-network
+
   # API service
   # Callback Receiver
   api:

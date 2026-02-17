@@ -1,0 +1,8 @@
+FROM golang:1.25.7-alpine
+
+RUN apk update && apk upgrade && \
+    apk --update add git make bash build-base
+
+WORKDIR /app
+
+CMD ["sh", "-c", "while true; do sleep 3600; done"]

@@ -1,51 +1,39 @@
 package main
 
 import (
-	"encoding/json"
+	"context"
 	"log"
-	"net/http"
+	"payway/internal/app"
+	"payway/internal/controller/http"
+	"payway/internal/webserver"
 )
 
-type Payment struct {
-	UserId         int    `json:"user"`
-	Amount         string `json:"amount"`
-	Currency       string `json:"currency"`
-	IdempotencyKey string `json:"idempotencyKey"`
-}
-
 func main() {
-	log.Println("Service web start")
 
-	// Создаем канал для обработки сигналов
-	// 	sigChan := make(chan os.Signal, 1)
-	// 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
-	// 	// Ждем сигнала для завершения
-	// 	<-sigChan
-	// 	log.Println("Received shutdown signal")
+	paymentRepo := app.NewPaymentService()
 
-	http.HandleFunc("POST /payments", createPayment)
-	http.HandleFunc("GET /payment", getPayment)
+	facade := http.NewPaymentFacade(paymentRepo)
 
-	log.Println("Server started on :80")
-	log.Fatal(http.ListenAndServe(":80", nil))
-}
+	// handlerType := os.Getenv("HTTP_HANDLER")
+	// port := os.Getenv("PORT")
 
-func createPayment(w http.ResponseWriter, r *http.Request) {
-	var payment Payment
-	if err := json.NewDecoder(r.Body).Decode(&payment); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+	handlerType := "gin"
+	// handlerType := "chi"
+	port := "8080"
+
+	server := webserver.NewWebServer(ctx, handlerType, port)
+
+	routes := http.GetRoutes(facade)
+
+	server.RegisterRoutes(routes)
+
+	log.Printf("Starting server on :%s", port)
+	if err := server.Run(); err != nil {
+		log.Fatal(err)
 	}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(payment)
-}
-
-func getPayment(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte("hello"))
 }
 
 // curl -X POST http://localhost:80/payments \
