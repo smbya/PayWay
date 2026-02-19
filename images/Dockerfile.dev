@@ -3,6 +3,10 @@ FROM golang:1.25.7-alpine
 RUN apk update && apk upgrade && \
     apk --update add git make bash build-base
 
+RUN go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+
+ENV PATH=$PATH:/go/bin
+
 WORKDIR /app
 
 CMD ["sh", "-c", "while true; do sleep 3600; done"]

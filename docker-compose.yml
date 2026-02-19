@@ -4,12 +4,10 @@ services:
   dev:
     build:
       context: .
-      dockerfile: images/api/Dockerfile.dev
-    ports:
-      - "85:80"
-      - "86:81"
+      dockerfile: images/Dockerfile.dev
     volumes:
       - ./app:/app
+      - go-mod-cache:/go/pkg/mod
     environment:
       - KAFKA_BROKERS=kafka:9092
     depends_on:
@@ -19,14 +17,14 @@ services:
       - payway-network
 
   # API service
-  # Callback Receiver
-  api:
+  web:
     build:
       context: .
-      dockerfile: images/api/Dockerfile
+      dockerfile: images/Dockerfile.web
+    volumes:
+      - go-mod-cache:/go/pkg/mod
     ports:
       - "80:80"
-      - "81:81"
     environment:
       - KAFKA_BROKERS=kafka:9092
     depends_on:
@@ -36,14 +34,47 @@ services:
       - payway-network
     restart: unless-stopped
   
-  # Projection Worker
+  # Callback Receiver
+  callback:
+    build:
+      context: .
+      dockerfile: images/Dockerfile.callback
+    volumes:
+      - go-mod-cache:/go/pkg/mod
+    ports:
+      - "81:80"
+    environment:
+      - KAFKA_BROKERS=kafka:9092
+    depends_on:
+      - db
+      - kafka
+    networks:
+      - payway-network
+    restart: unless-stopped
+
   # Worker Service
   worker:
     build:
       context: .
-      dockerfile: images/worker/Dockerfile
-    ports:
-      - "82:82"
+      dockerfile: images/Dockerfile.worker
+    volumes:
+      - go-mod-cache:/go/pkg/mod
+    environment:
+      - KAFKA_BROKERS=kafka:9092
+    depends_on:
+      - db
+      - kafka
+    networks:
+      - payway-network
+    restart: unless-stopped
+
+  # Projection Worker
+  projection_worker:
+    build:
+      context: .
+      dockerfile: images/Dockerfile.projection_worker
+    volumes:
+      - go-mod-cache:/go/pkg/mod
     environment:
       - KAFKA_BROKERS=kafka:9092
     depends_on:
@@ -148,6 +179,7 @@ volumes:
   prometheus_data:
   grafana_data:
   kafka_data:
+  go-mod-cache:
 
 networks:
   payway-network:

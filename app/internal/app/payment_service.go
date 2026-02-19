@@ -1,6 +1,9 @@
 package app
 
-import "context"
+import (
+	"context"
+	"payway/internal/repository"
+)
 
 type PaymentService interface {
 	Create(ctx context.Context, amount float64) (string, int, error)
@@ -8,15 +11,27 @@ type PaymentService interface {
 }
 
 type paymentService struct {
-	//repository
+	repository *repository.Repository
 }
 
-func NewPaymentService() PaymentService {
-	return &paymentService{}
+func NewPaymentService(repository *repository.Repository) PaymentService {
+	return &paymentService{
+		repository: repository,
+	}
 }
 
 func (s *paymentService) Create(ctx context.Context, amount float64) (string, int, error) {
-	return "create payment id 123", 200, nil
+
+	result := s.repository.CreatePayment(
+		ctx,
+		654,
+		"456.78",
+		"RUB",
+		"New",
+		"wallet123",
+	)
+
+	return "create payment id: " + result, 200, nil
 }
 
 func (s *paymentService) GetStatus(ctx context.Context, id string) (string, int, error) {

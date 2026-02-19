@@ -22,6 +22,7 @@ func NewWebServer(
 		return chi.NewChiServer(ctx, port)
 	case "gin":
 		return gin.NewGinServer(ctx, port)
+	// TODO:
 	// case "fasthttp":
 	// 	return fastHttp.NewFastHttpServer(ctx, port)
 	default:

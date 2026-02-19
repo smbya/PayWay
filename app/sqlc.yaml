@@ -1,0 +1,12 @@
+version: "2"
+sql:
+  - schema: "db/schema.sql"
+    queries: "db/query.sql"
+    engine: "postgresql"
+    database:
+      uri: "postgres://user:password@db:5432/payway?sslmode=disable"
+    gen:
+      go:
+        package: "query"
+        out: "db/query"
+        sql_package: "pgx/v5"

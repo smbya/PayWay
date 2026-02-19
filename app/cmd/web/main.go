@@ -5,7 +5,10 @@ import (
 	"log"
 	"payway/internal/app"
 	"payway/internal/controller/http"
+	"payway/internal/repository"
 	"payway/internal/webserver"
+
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func main() {
@@ -13,16 +16,24 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	paymentRepo := app.NewPaymentService()
+	pool, err := pgxpool.New(ctx, "postgres://user:password@db:5432/payway?sslmode=disable")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer pool.Close()
 
-	facade := http.NewPaymentFacade(paymentRepo)
+	repository := repository.NewRepositury(pool)
+
+	paymentService := app.NewPaymentService(repository)
+
+	facade := http.NewPaymentFacade(paymentService)
 
 	// handlerType := os.Getenv("HTTP_HANDLER")
 	// port := os.Getenv("PORT")
 
 	handlerType := "gin"
 	// handlerType := "chi"
-	port := "8080"
+	port := "80"
 
 	server := webserver.NewWebServer(ctx, handlerType, port)
 

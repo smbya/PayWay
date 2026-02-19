@@ -12,11 +12,16 @@ func GetRoutes(facade PaymentFacade) []Route {
 			},
 		},
 		{
+			Method:  "POST",
+			Path:    "/payments",
+			Handler: facade.CreatePayment,
+		},
+		{
 			Method: "POST",
-			Path:   "/payments",
+			Path:   "/post",
 			Handler: func(c HttpContext) (string, int, error) {
-				log.Print("hello handler")
-				return "Hello world", 200, nil
+				log.Print("post test")
+				return "post request", 200, nil
 			},
 		},
 		{
