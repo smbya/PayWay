@@ -17,11 +17,9 @@ docker-compose up -d
 
 **Запросы:**
 
-
-
 **TODO:**
 
-- [x] Добавить общий конфиг
+- [X] Добавить общий конфиг
 - [ ] Добавить в readme инструкцию по запуску и запросам
 - [ ] Добавить логирование на всех основных уровнях (взять slog)
 - [ ] Добавить миграции (gomigrate/goose)
@@ -32,21 +30,18 @@ docker-compose up -d
 - [ ] merge webserver and controller in file struct
 - [ ] Перенести /db/ в `internal/repository`,
 
-> internal/repository/repository.go - только интефрейсы
-> internal/repository/posgresql/repository.go
-> internal/repository/posgresql/db/
+> * internal/repository/repository.go - только интефрейсы
+> * internal/repository/posgresql/repository.go
+> * internal/repository/posgresql/db/
 
 - [ ] Переиспользование, разделение сервисов. Поправить выходные параметры
 - [ ] Создать handler model в контроллере
 - [ ] Сделать монорепу
-
-
 
 ===
 
 **План проекта**
 
 [Task.md](assets/task.md)
-
 
 ![](assets/tg_image_2563737507.png)
