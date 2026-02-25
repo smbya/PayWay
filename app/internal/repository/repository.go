@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 	"log"
-	"payway/db/query"
+	"payway/internal/repository/db/query"
 
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"

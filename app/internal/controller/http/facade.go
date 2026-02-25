@@ -11,17 +11,17 @@ type PaymentFacade interface {
 }
 
 type facade struct {
-	repo app.PaymentService
+	PaymentServicie app.PaymentService
 }
 
-func NewPaymentFacade(repo app.PaymentService) PaymentFacade {
-	return &facade{repo: repo}
+func NewPaymentFacade(PaymentServicie app.PaymentService) PaymentFacade {
+	return &facade{PaymentServicie: PaymentServicie}
 }
 
 func (f *facade) CreatePayment(c HttpContext) (string, int, error) {
-	return f.repo.Create(context.TODO(), 2234)
+	return f.PaymentServicie.Create(context.TODO(), 2234)
 }
 
 func (f *facade) GetPaymentStatus(c HttpContext) (string, int, error) {
-	return f.repo.GetStatus(context.TODO(), c.UrlParams["id"])
+	return f.PaymentServicie.GetStatus(context.TODO(), c.UrlParams["id"])
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"payway/internal/app"
+	"payway/internal/config"
 	"payway/internal/controller/http"
 	"payway/internal/repository"
 	"payway/internal/webserver"
@@ -13,10 +14,12 @@ import (
 
 func main() {
 
+	cfg := config.CreateConfig()
+
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	pool, err := pgxpool.New(ctx, "postgres://user:password@db:5432/payway?sslmode=disable")
+	pool, err := pgxpool.New(ctx, cfg.Db.GetConnectString())
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -28,20 +31,13 @@ func main() {
 
 	facade := http.NewPaymentFacade(paymentService)
 
-	// handlerType := os.Getenv("HTTP_HANDLER")
-	// port := os.Getenv("PORT")
-
-	handlerType := "gin"
-	// handlerType := "chi"
-	port := "80"
-
-	server := webserver.NewWebServer(ctx, handlerType, port)
+	server := webserver.NewWebServer(ctx, cfg.App.HandlerType, cfg.App.Port)
 
 	routes := http.GetRoutes(facade)
 
 	server.RegisterRoutes(routes)
 
-	log.Printf("Starting server on :%s", port)
+	log.Printf("Starting server on :%s", cfg.App.Port)
 	if err := server.Run(); err != nil {
 		log.Fatal(err)
 	}
