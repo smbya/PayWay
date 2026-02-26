@@ -3,8 +3,8 @@ package webserver
 import (
 	"context"
 	"payway/internal/controller/http"
-	"payway/internal/webserver/chi"
-	"payway/internal/webserver/gin"
+	"payway/internal/controller/webserver/chi"
+	"payway/internal/controller/webserver/gin"
 )
 
 type WebServer interface {

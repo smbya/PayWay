@@ -1,12 +1,12 @@
 version: "2"
 sql:
-  - schema: "internal/repository/db/schema.sql"
-    queries: "internal/repository/db/query.sql"
+  - schema: "internal/repository/posgresql/db/schema.sql"
+    queries: "internal/repository/posgresql/db/query.sql"
     engine: "postgresql"
     database:
       uri: "${DB_URL}"
     gen:
       go:
         package: "query"
-        out: "internal/repository/db/query"
+        out: "internal/repository/posgresql/db/query"
         sql_package: "pgx/v5"
