@@ -2,7 +2,7 @@ start:
 	docker-compose up -d
 
 sqlc: 
-	docker-compose exec dev sqlc generate
+	docker-compose run --rm dev sqlc generate
 
 tidy:
 	cd app && go mod tidy

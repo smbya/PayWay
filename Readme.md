@@ -31,7 +31,7 @@ docker-compose up -d
 - [ ] Перенести /db/ в `internal/repository`,
 
 > * internal/repository/repository.go - только интефрейсы
-> * internal/repository/posgresql/repository.go
+> * internal/repository/posgresql/implement.go
 > * internal/repository/posgresql/db/
 
 - [ ] Переиспользование, разделение сервисов. Поправить выходные параметры

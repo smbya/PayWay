@@ -4,7 +4,7 @@ sql:
     queries: "internal/repository/db/query.sql"
     engine: "postgresql"
     database:
-      uri: "postgres://user:password@db:5432/payway?sslmode=disable"
+      uri: "${DB_URL}"
     gen:
       go:
         package: "query"

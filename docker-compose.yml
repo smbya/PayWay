@@ -5,14 +5,13 @@ services:
     build:
       context: .
       dockerfile: images/Dockerfile.dev
+    env_file:
+      - app/.env
     volumes:
       - ./app:/app
       - go-mod-cache:/go/pkg/mod
-    environment:
-      - KAFKA_BROKERS=kafka:9092
     depends_on:
       - db
-      - kafka
     networks:
       - payway-network
 
