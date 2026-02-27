@@ -33,15 +33,11 @@ func main() {
 
 	facade := http.NewPaymentFacade(paymentService, cfg.Logger)
 
-	server := webserver.NewWebServer(ctx, cfg.App.HandlerType, cfg.App.Port, cfg.Logger)
-
-	routes := http.GetRoutes(facade)
-
-	server.RegisterRoutes(routes)
+	server := webserver.NewWebServer(cfg.App.HandlerType, cfg.App.Port, cfg.Logger, facade)
 
 	cfg.Logger.Info("Starting server", "port", cfg.App.Port)
 
-	if err := server.Run(); err != nil {
+	if err := server.Serve(ctx); err != nil {
 		cfg.Logger.Error("Server failed to start", "error", err)
 		return
 	}

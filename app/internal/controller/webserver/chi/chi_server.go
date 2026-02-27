@@ -2,68 +2,66 @@ package chi
 
 import (
 	"context"
-	"log"
-
-	// "log"
 	"log/slog"
-	nethttp "net/http"
-	"payway/internal/controller/http"
+	"net/http"
+
+	httphandler "payway/internal/controller/http"
 
 	"github.com/go-chi/chi/v5"
 )
 
 type ChiServer struct {
-	ctx    context.Context
 	port   string
 	router *chi.Mux
 	logger *slog.Logger
 }
 
-func NewChiServer(ctx context.Context, port string, logger *slog.Logger) *ChiServer {
-	return &ChiServer{
-		ctx:    ctx,
+func NewChiServer(port string, logger *slog.Logger, facade httphandler.PaymentFacade) *ChiServer {
+	s := &ChiServer{
 		port:   port,
 		router: chi.NewRouter(),
 		logger: logger,
 	}
+	s.registerRoutes(facade)
+	return s
 }
 
-func (s *ChiServer) RegisterRoutes(routes []http.Route) {
-	for _, route := range routes {
-		HandlerFunc := func(w nethttp.ResponseWriter, r *nethttp.Request) {
-			s.logger.Info("HTTP Request", "URL", r.URL.String(), "method", r.Method)
-			params := make(map[string]string)
-			rctx := chi.RouteContext(r.Context())
-			if rctx != nil {
-				for i, key := range rctx.URLParams.Keys {
-					params[key] = rctx.URLParams.Values[i]
-				}
-			}
+func (s *ChiServer) registerRoutes(facade httphandler.PaymentFacade) {
+	s.router.Get("/test/{name}/{name2}", func(w http.ResponseWriter, r *http.Request) {
+		name := chi.URLParam(r, "name")
+		name2 := chi.URLParam(r, "name2")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("test with params: " + name + " and " + name2))
+	})
 
-			actionCtx := http.HttpContext{
-				UrlParams: params,
-				Body:      "", //r.Body,
-			}
+	s.router.Post("/payments", func(w http.ResponseWriter, r *http.Request) {
+		s.logger.Info("HTTP Request", "URL", r.URL.String(), "method", r.Method)
+		params := make(map[string]string)
+		response, statusCode, _ := facade.CreatePayment(httphandler.HttpContext{
+			UrlParams: params,
+			Body:      "",
+		})
+		w.WriteHeader(statusCode)
+		w.Write([]byte(response))
+	})
 
-			response, statusCode, _ := route.Handler(actionCtx)
+	s.router.Post("/post", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("post request"))
+	})
 
-			w.WriteHeader(statusCode)
-			w.Write([]byte(response))
-		}
-
-		log.Print(route.Method,
-			route.Path)
-
-		s.logger.Info("Added new route", "method", route.Method, "path", route.Path)
-
-		s.router.MethodFunc(
-			route.Method,
-			route.Path,
-			HandlerFunc,
-		)
-	}
+	s.router.Get("/payments/{id}", func(w http.ResponseWriter, r *http.Request) {
+		s.logger.Info("HTTP Request", "URL", r.URL.String(), "method", r.Method)
+		id := chi.URLParam(r, "id")
+		response, statusCode, _ := facade.GetPaymentStatus(httphandler.HttpContext{
+			UrlParams: map[string]string{"id": id},
+			Body:      "",
+		})
+		w.WriteHeader(statusCode)
+		w.Write([]byte(response))
+	})
 }
 
-func (s *ChiServer) Run() error {
-	return nethttp.ListenAndServe(":"+s.port, s.router)
+func (s *ChiServer) Serve(ctx context.Context) error {
+	return http.ListenAndServe(":"+s.port, s.router)
 }

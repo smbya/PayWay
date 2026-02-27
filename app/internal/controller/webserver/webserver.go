@@ -3,31 +3,29 @@ package webserver
 import (
 	"context"
 	"log/slog"
+
 	"payway/internal/controller/http"
 	"payway/internal/controller/webserver/chi"
 	"payway/internal/controller/webserver/gin"
 )
 
 type WebServer interface {
-	RegisterRoutes([]http.Route)
-	Run() error
+	Serve(ctx context.Context) error
 }
 
 func NewWebServer(
-	ctx context.Context,
 	handlerType string,
 	port string,
 	logger *slog.Logger,
+	facade http.PaymentFacade,
 ) WebServer {
 	switch handlerType {
 	case "chi":
-		return chi.NewChiServer(ctx, port, logger)
+		return chi.NewChiServer(port, logger, facade)
 	case "gin":
-		return gin.NewGinServer(ctx, port)
-	// TODO:
-	// case "fasthttp":
-	// 	return fastHttp.NewFastHttpServer(ctx, port)
+		return gin.NewGinServer(port, logger, facade)
 	default:
+		logger.Error("Server not choosed: ", "handlerType", handlerType)
 		panic("Server not choosed: " + handlerType)
 	}
 }
