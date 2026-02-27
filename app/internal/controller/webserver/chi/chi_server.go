@@ -3,6 +3,9 @@ package chi
 import (
 	"context"
 	"log"
+
+	// "log"
+	"log/slog"
 	nethttp "net/http"
 	"payway/internal/controller/http"
 
@@ -13,20 +16,22 @@ type ChiServer struct {
 	ctx    context.Context
 	port   string
 	router *chi.Mux
+	logger *slog.Logger
 }
 
-func NewChiServer(ctx context.Context, port string) *ChiServer {
+func NewChiServer(ctx context.Context, port string, logger *slog.Logger) *ChiServer {
 	return &ChiServer{
 		ctx:    ctx,
 		port:   port,
 		router: chi.NewRouter(),
+		logger: logger,
 	}
 }
 
 func (s *ChiServer) RegisterRoutes(routes []http.Route) {
 	for _, route := range routes {
 		HandlerFunc := func(w nethttp.ResponseWriter, r *nethttp.Request) {
-			log.Print("opa")
+			s.logger.Info("HTTP Request", "URL", r.URL.String(), "method", r.Method)
 			params := make(map[string]string)
 			rctx := chi.RouteContext(r.Context())
 			if rctx != nil {
@@ -48,6 +53,8 @@ func (s *ChiServer) RegisterRoutes(routes []http.Route) {
 
 		log.Print(route.Method,
 			route.Path)
+
+		s.logger.Info("Added new route", "method", route.Method, "path", route.Path)
 
 		s.router.MethodFunc(
 			route.Method,

@@ -2,12 +2,11 @@ package main
 
 import (
 	"context"
-	"log"
 	"payway/internal/app"
 	"payway/internal/config"
 	"payway/internal/controller/http"
+	"payway/internal/controller/webserver"
 	"payway/internal/repository"
-	"payway/internal/webserver"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -21,25 +20,30 @@ func main() {
 
 	pool, err := pgxpool.New(ctx, cfg.Db.GetConnectString())
 	if err != nil {
-		log.Fatal(err)
+		cfg.Logger.Error("Failed to connect to database", "Error", err)
+		return
 	}
 	defer pool.Close()
 
-	repository := repository.NewRepositury(pool)
+	cfg.Logger.Info("Connected to database")
 
-	paymentService := app.NewPaymentService(repository)
+	repository := repository.NewRepository(pool)
 
-	facade := http.NewPaymentFacade(paymentService)
+	paymentService := app.NewPaymentService(repository, cfg.Logger)
 
-	server := webserver.NewWebServer(ctx, cfg.App.HandlerType, cfg.App.Port)
+	facade := http.NewPaymentFacade(paymentService, cfg.Logger)
+
+	server := webserver.NewWebServer(ctx, cfg.App.HandlerType, cfg.App.Port, cfg.Logger)
 
 	routes := http.GetRoutes(facade)
 
 	server.RegisterRoutes(routes)
 
-	log.Printf("Starting server on :%s", cfg.App.Port)
+	cfg.Logger.Info("Starting server", "port", cfg.App.Port)
+
 	if err := server.Run(); err != nil {
-		log.Fatal(err)
+		cfg.Logger.Error("Server failed to start", "error", err)
+		return
 	}
 }
 
