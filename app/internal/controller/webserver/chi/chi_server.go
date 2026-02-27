@@ -11,14 +11,14 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-type ChiServer struct {
+type chiServer struct {
 	port   string
 	router *chi.Mux
 	logger *slog.Logger
 }
 
-func NewChiServer(port string, logger *slog.Logger, handler *httphandler.PaymentHandler) *ChiServer {
-	s := &ChiServer{
+func NewChiServer(port string, logger *slog.Logger, handler *httphandler.PaymentHandler) *chiServer {
+	s := &chiServer{
 		port:   port,
 		router: chi.NewRouter(),
 		logger: logger,
@@ -27,7 +27,7 @@ func NewChiServer(port string, logger *slog.Logger, handler *httphandler.Payment
 	return s
 }
 
-func (s *ChiServer) registerRoutes(handler *httphandler.PaymentHandler) {
+func (s *chiServer) registerRoutes(handler *httphandler.PaymentHandler) {
 	s.router.Post("/payments", func(w http.ResponseWriter, r *http.Request) {
 		s.logger.Info("HTTP Request", "URL", r.URL.String(), "method", r.Method)
 
@@ -64,6 +64,6 @@ func (s *ChiServer) registerRoutes(handler *httphandler.PaymentHandler) {
 	})
 }
 
-func (s *ChiServer) Serve(ctx context.Context) error {
+func (s *chiServer) Serve(ctx context.Context) error {
 	return http.ListenAndServe(":"+s.port, s.router)
 }

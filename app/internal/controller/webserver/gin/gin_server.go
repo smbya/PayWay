@@ -10,14 +10,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type GinServer struct {
+type ginServer struct {
 	port   string
 	engine *gin.Engine
 	logger *slog.Logger
 }
 
-func NewGinServer(port string, logger *slog.Logger, handler *httphandler.PaymentHandler) *GinServer {
-	s := &GinServer{
+func NewGinServer(port string, logger *slog.Logger, handler *httphandler.PaymentHandler) *ginServer {
+	s := &ginServer{
 		port:   port,
 		engine: gin.Default(),
 		logger: logger,
@@ -26,7 +26,7 @@ func NewGinServer(port string, logger *slog.Logger, handler *httphandler.Payment
 	return s
 }
 
-func (s *GinServer) registerRoutes(handler *httphandler.PaymentHandler) {
+func (s *ginServer) registerRoutes(handler *httphandler.PaymentHandler) {
 	s.engine.POST("/payments", func(c *gin.Context) {
 		s.logger.Info("HTTP Request", "URL", c.Request.URL.String(), "method", c.Request.Method)
 
@@ -59,6 +59,6 @@ func (s *GinServer) registerRoutes(handler *httphandler.PaymentHandler) {
 	})
 }
 
-func (s *GinServer) Serve(ctx context.Context) error {
+func (s *ginServer) Serve(ctx context.Context) error {
 	return s.engine.Run(":" + s.port)
 }

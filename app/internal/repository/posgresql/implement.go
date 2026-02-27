@@ -11,19 +11,19 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type PaymentRepo struct {
+type paymentRepo struct {
 	pool    *pgxpool.Pool
 	queries *query.Queries
 }
 
 func NewPaymentRepo(pool *pgxpool.Pool) repository.PaymentRepository {
-	return &PaymentRepo{
+	return &paymentRepo{
 		pool:    pool,
 		queries: query.New(pool),
 	}
 }
 
-func (r *PaymentRepo) CreatePayment(ctx context.Context, params repository.CreatePaymentParams) (*payment.Payment, error) {
+func (r *paymentRepo) CreatePayment(ctx context.Context, params repository.CreatePaymentParams) (*payment.Payment, error) {
 	var amount pgtype.Numeric
 	if err := amount.Scan(params.Amount); err != nil {
 		return nil, err
@@ -49,7 +49,7 @@ func (r *PaymentRepo) CreatePayment(ctx context.Context, params repository.Creat
 	return toDomainPayment(dbPayment), nil
 }
 
-func (r *PaymentRepo) GetPaymentByID(ctx context.Context, id string) (*payment.Payment, error) {
+func (r *paymentRepo) GetPaymentByID(ctx context.Context, id string) (*payment.Payment, error) {
 	var uuid pgtype.UUID
 	if err := uuid.Scan(id); err != nil {
 		return nil, err
