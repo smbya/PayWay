@@ -6,7 +6,7 @@ import (
 	"payway/internal/config"
 	"payway/internal/controller/http"
 	"payway/internal/controller/webserver"
-	"payway/internal/repository"
+	"payway/internal/repository/posgresql"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -27,7 +27,7 @@ func main() {
 
 	cfg.Logger.Info("Connected to database")
 
-	repository := repository.NewRepository(pool)
+	repository := posgresql.NewPaymentRepo(pool)
 
 	paymentService := app.NewPaymentService(repository, cfg.Logger)
 

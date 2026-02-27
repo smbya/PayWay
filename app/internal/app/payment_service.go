@@ -21,11 +21,11 @@ type CreatePaymentRequest struct {
 }
 
 type paymentService struct {
-	repository *repository.Repository
+	repository repository.PaymentRepository
 	logger     *slog.Logger
 }
 
-func NewPaymentService(repository *repository.Repository, logger *slog.Logger) PaymentService {
+func NewPaymentService(repository repository.PaymentRepository, logger *slog.Logger) PaymentService {
 	return &paymentService{
 		repository: repository,
 		logger:     logger,
