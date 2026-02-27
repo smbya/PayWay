@@ -1,6 +1,8 @@
 version: "2"
 sql:
-  - schema: "internal/repository/posgresql/db/schema.sql"
+  - schema:
+      # - "${DB_MIGRATIONS_DIRECTORY}/*.up.sql"
+      - "internal/repository/migrations/*.up.sql"
     queries: "internal/repository/posgresql/db/query.sql"
     engine: "postgresql"
     database:
