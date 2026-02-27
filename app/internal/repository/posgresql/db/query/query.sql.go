@@ -12,9 +12,9 @@ import (
 )
 
 const createPayment = `-- name: CreatePayment :one
-INSERT INTO payments (user_id, amount, currency, status, destination)
-VALUES ($1, $2, $3, $4, $5)
-RETURNING id, user_id, amount, currency, status, destination, created_at
+INSERT INTO payments (user_id, amount, currency, status, destination, description)
+VALUES ($1, $2, $3, $4, $5, $6)
+RETURNING id, user_id, amount, currency, status, destination, description, created_at
 `
 
 type CreatePaymentParams struct {
@@ -23,17 +23,30 @@ type CreatePaymentParams struct {
 	Currency    string
 	Status      string
 	Destination string
+	Description pgtype.Text
 }
 
-func (q *Queries) CreatePayment(ctx context.Context, arg CreatePaymentParams) (Payment, error) {
+type CreatePaymentRow struct {
+	ID          pgtype.UUID
+	UserID      int32
+	Amount      pgtype.Numeric
+	Currency    string
+	Status      string
+	Destination string
+	Description pgtype.Text
+	CreatedAt   pgtype.Timestamptz
+}
+
+func (q *Queries) CreatePayment(ctx context.Context, arg CreatePaymentParams) (CreatePaymentRow, error) {
 	row := q.db.QueryRow(ctx, createPayment,
 		arg.UserID,
 		arg.Amount,
 		arg.Currency,
 		arg.Status,
 		arg.Destination,
+		arg.Description,
 	)
-	var i Payment
+	var i CreatePaymentRow
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
@@ -41,6 +54,40 @@ func (q *Queries) CreatePayment(ctx context.Context, arg CreatePaymentParams) (P
 		&i.Currency,
 		&i.Status,
 		&i.Destination,
+		&i.Description,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const getPaymentByID = `-- name: GetPaymentByID :one
+SELECT id, user_id, amount, currency, status, destination, description, created_at
+FROM payments
+WHERE id = $1
+`
+
+type GetPaymentByIDRow struct {
+	ID          pgtype.UUID
+	UserID      int32
+	Amount      pgtype.Numeric
+	Currency    string
+	Status      string
+	Destination string
+	Description pgtype.Text
+	CreatedAt   pgtype.Timestamptz
+}
+
+func (q *Queries) GetPaymentByID(ctx context.Context, id pgtype.UUID) (GetPaymentByIDRow, error) {
+	row := q.db.QueryRow(ctx, getPaymentByID, id)
+	var i GetPaymentByIDRow
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Amount,
+		&i.Currency,
+		&i.Status,
+		&i.Destination,
+		&i.Description,
 		&i.CreatedAt,
 	)
 	return i, err

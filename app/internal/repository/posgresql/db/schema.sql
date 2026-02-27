@@ -5,5 +5,7 @@ CREATE TABLE payments (
     currency TEXT NOT NULL,
     status TEXT NOT NULL,
     destination TEXT NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+    description TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
 );

@@ -4,11 +4,20 @@ import (
 	"context"
 	"log/slog"
 	"payway/internal/repository"
+	"payway/pkg/domain/payment"
 )
 
 type PaymentService interface {
-	Create(ctx context.Context, amount float64) (string, int, error)
-	GetStatus(ctx context.Context, id string) (string, int, error)
+	Create(ctx context.Context, req *CreatePaymentRequest) (*payment.Payment, error)
+	GetByID(ctx context.Context, id string) (*payment.Payment, error)
+}
+
+type CreatePaymentRequest struct {
+	UserID      int32
+	Amount      string
+	Currency    string
+	Destination string
+	Description string
 }
 
 type paymentService struct {
@@ -23,24 +32,34 @@ func NewPaymentService(repository *repository.Repository, logger *slog.Logger) P
 	}
 }
 
-func (s *paymentService) Create(ctx context.Context, amount float64) (string, int, error) {
-	s.logger.Info("Creating payment", "amount", amount)
+func (s *paymentService) Create(ctx context.Context, req *CreatePaymentRequest) (*payment.Payment, error) {
+	s.logger.Info("Creating payment", "user_id", req.UserID, "amount", req.Amount)
 
-	result := s.repository.CreatePayment(
-		ctx,
-		654,
-		"456.78",
-		"RUB",
-		"New",
-		"wallet123",
-	)
+	p, err := s.repository.CreatePayment(ctx, repository.CreatePaymentParams{
+		UserID:      req.UserID,
+		Amount:      req.Amount,
+		Currency:    req.Currency,
+		Status:      string(payment.STATUS_NEW),
+		Destination: req.Destination,
+		Description: req.Description,
+	})
+	if err != nil {
+		s.logger.Error("Failed to create payment", "error", err)
+		return nil, err
+	}
 
-	s.logger.Info("Payment created", "id", result)
-	return "create payment id: " + result, 200, nil
+	s.logger.Info("Payment created", "id", p.ID)
+	return p, nil
 }
 
-func (s *paymentService) GetStatus(ctx context.Context, id string) (string, int, error) {
+func (s *paymentService) GetByID(ctx context.Context, id string) (*payment.Payment, error) {
 	s.logger.Info("Getting payment status", "id", id)
 
-	return "nu tipa status v rabote...", 200, nil
+	p, err := s.repository.GetPaymentByID(ctx, id)
+	if err != nil {
+		s.logger.Error("Failed to get payment", "id", id, "error", err)
+		return nil, err
+	}
+
+	return p, nil
 }

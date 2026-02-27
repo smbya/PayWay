@@ -2,6 +2,7 @@ package chi
 
 import (
 	"context"
+	"encoding/json"
 	"log/slog"
 	"net/http"
 
@@ -16,49 +17,50 @@ type ChiServer struct {
 	logger *slog.Logger
 }
 
-func NewChiServer(port string, logger *slog.Logger, facade httphandler.PaymentFacade) *ChiServer {
+func NewChiServer(port string, logger *slog.Logger, handler *httphandler.PaymentHandler) *ChiServer {
 	s := &ChiServer{
 		port:   port,
 		router: chi.NewRouter(),
 		logger: logger,
 	}
-	s.registerRoutes(facade)
+	s.registerRoutes(handler)
 	return s
 }
 
-func (s *ChiServer) registerRoutes(facade httphandler.PaymentFacade) {
-	s.router.Get("/test/{name}/{name2}", func(w http.ResponseWriter, r *http.Request) {
-		name := chi.URLParam(r, "name")
-		name2 := chi.URLParam(r, "name2")
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("test with params: " + name + " and " + name2))
-	})
-
+func (s *ChiServer) registerRoutes(handler *httphandler.PaymentHandler) {
 	s.router.Post("/payments", func(w http.ResponseWriter, r *http.Request) {
 		s.logger.Info("HTTP Request", "URL", r.URL.String(), "method", r.Method)
-		params := make(map[string]string)
-		response, statusCode, _ := facade.CreatePayment(httphandler.HttpContext{
-			UrlParams: params,
-			Body:      "",
-		})
-		w.WriteHeader(statusCode)
-		w.Write([]byte(response))
-	})
 
-	s.router.Post("/post", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("post request"))
+		var req httphandler.CreatePaymentRequest
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		payment, err := handler.CreatePayment(r.Context(), &req)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusCreated)
+		json.NewEncoder(w).Encode(payment)
 	})
 
 	s.router.Get("/payments/{id}", func(w http.ResponseWriter, r *http.Request) {
 		s.logger.Info("HTTP Request", "URL", r.URL.String(), "method", r.Method)
 		id := chi.URLParam(r, "id")
-		response, statusCode, _ := facade.GetPaymentStatus(httphandler.HttpContext{
-			UrlParams: map[string]string{"id": id},
-			Body:      "",
-		})
-		w.WriteHeader(statusCode)
-		w.Write([]byte(response))
+
+		payment, err := handler.GetPaymentByID(r.Context(), id)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(payment)
 	})
 }
 

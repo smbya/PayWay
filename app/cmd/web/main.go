@@ -31,9 +31,9 @@ func main() {
 
 	paymentService := app.NewPaymentService(repository, cfg.Logger)
 
-	facade := http.NewPaymentFacade(paymentService, cfg.Logger)
+	handler := http.NewPaymentHandler(paymentService, cfg.Logger)
 
-	server := webserver.NewWebServer(cfg.App.HandlerType, cfg.App.Port, cfg.Logger, facade)
+	server := webserver.NewWebServer(cfg.App.HandlerType, cfg.App.Port, cfg.Logger, handler)
 
 	cfg.Logger.Info("Starting server", "port", cfg.App.Port)
 
@@ -42,7 +42,3 @@ func main() {
 		return
 	}
 }
-
-// curl -X POST http://localhost:80/payments \
-//   -H "Content-Type: application/json" \
-//   -d '{"user":234,"amount":"445.67","currency":"RUB","idempotencyKey":"abcde"}'

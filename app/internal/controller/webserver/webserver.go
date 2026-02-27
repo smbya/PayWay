@@ -17,13 +17,13 @@ func NewWebServer(
 	handlerType string,
 	port string,
 	logger *slog.Logger,
-	facade http.PaymentFacade,
+	handler *http.PaymentHandler,
 ) WebServer {
 	switch handlerType {
 	case "chi":
-		return chi.NewChiServer(port, logger, facade)
+		return chi.NewChiServer(port, logger, handler)
 	case "gin":
-		return gin.NewGinServer(port, logger, facade)
+		return gin.NewGinServer(port, logger, handler)
 	default:
 		logger.Error("Server not choosed: ", "handlerType", handlerType)
 		panic("Server not choosed: " + handlerType)

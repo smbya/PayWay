@@ -16,45 +16,46 @@ type GinServer struct {
 	logger *slog.Logger
 }
 
-func NewGinServer(port string, logger *slog.Logger, facade httphandler.PaymentFacade) *GinServer {
+func NewGinServer(port string, logger *slog.Logger, handler *httphandler.PaymentHandler) *GinServer {
 	s := &GinServer{
 		port:   port,
 		engine: gin.Default(),
 		logger: logger,
 	}
-	s.registerRoutes(facade)
+	s.registerRoutes(handler)
 	return s
 }
 
-func (s *GinServer) registerRoutes(facade httphandler.PaymentFacade) {
-	s.engine.GET("/test/:name/:name2", func(c *gin.Context) {
-		name := c.Param("name")
-		name2 := c.Param("name2")
-		c.String(http.StatusOK, "test with params: "+name+" and "+name2)
-	})
-
+func (s *GinServer) registerRoutes(handler *httphandler.PaymentHandler) {
 	s.engine.POST("/payments", func(c *gin.Context) {
 		s.logger.Info("HTTP Request", "URL", c.Request.URL.String(), "method", c.Request.Method)
-		params := make(map[string]string)
-		response, statusCode, _ := facade.CreatePayment(httphandler.HttpContext{
-			UrlParams: params,
-			Body:      "",
-		})
-		c.String(statusCode, response)
-	})
 
-	s.engine.POST("/post", func(c *gin.Context) {
-		c.String(http.StatusOK, "post request")
+		var req httphandler.CreatePaymentRequest
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		payment, err := handler.CreatePayment(c.Request.Context(), &req)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusCreated, payment)
 	})
 
 	s.engine.GET("/payments/:id", func(c *gin.Context) {
 		s.logger.Info("HTTP Request", "URL", c.Request.URL.String(), "method", c.Request.Method)
 		id := c.Param("id")
-		response, statusCode, _ := facade.GetPaymentStatus(httphandler.HttpContext{
-			UrlParams: map[string]string{"id": id},
-			Body:      "",
-		})
-		c.String(statusCode, response)
+
+		payment, err := handler.GetPaymentByID(c.Request.Context(), id)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, payment)
 	})
 }
 

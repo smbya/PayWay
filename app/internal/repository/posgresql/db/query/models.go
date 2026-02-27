@@ -15,5 +15,7 @@ type Payment struct {
 	Currency    string
 	Status      string
 	Destination string
+	Description pgtype.Text
 	CreatedAt   pgtype.Timestamptz
+	UpdatedAt   pgtype.Timestamptz
 }

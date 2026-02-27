@@ -20,6 +20,8 @@ services:
     build:
       context: .
       dockerfile: images/Dockerfile.web
+    env_file:
+      - app/.env
     volumes:
       - go-mod-cache:/go/pkg/mod
     ports:
@@ -38,6 +40,8 @@ services:
     build:
       context: .
       dockerfile: images/Dockerfile.callback
+    env_file:
+      - app/.env
     volumes:
       - go-mod-cache:/go/pkg/mod
     ports:
@@ -56,6 +60,8 @@ services:
     build:
       context: .
       dockerfile: images/Dockerfile.worker
+    env_file:
+      - app/.env
     volumes:
       - go-mod-cache:/go/pkg/mod
     environment:
@@ -72,6 +78,8 @@ services:
     build:
       context: .
       dockerfile: images/Dockerfile.projection_worker
+    env_file:
+      - app/.env
     volumes:
       - go-mod-cache:/go/pkg/mod
     environment:
