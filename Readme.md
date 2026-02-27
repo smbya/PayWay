@@ -12,6 +12,7 @@
 
 ```cli
 git clone git@github.com:smbya/PayWay.git .
+cp .env.example .env
 cp ./app/.env.example ./app/.env
 docker-compose up -d
 make migrate-up

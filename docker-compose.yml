@@ -25,7 +25,7 @@ services:
     volumes:
       - go-mod-cache:/go/pkg/mod
     ports:
-      - "80:80"
+      - "${WEB_SERVICE_PORT:-80}:80"
     environment:
       - KAFKA_BROKERS=kafka:9092
     depends_on:
