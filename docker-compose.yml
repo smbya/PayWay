@@ -154,32 +154,33 @@ services:
   #     - payway-network
   #   restart: unless-stopped
 
-  # # Prometheus
-  # prometheus:
-  #   image: prom/prometheus:latest
-  #   ports:
-  #     - "9090:9090"
-  #   volumes:
-  #     - prometheus_data:/prometheus
-  #   networks:
-  #     - payway-network
-  #   restart: unless-stopped
+  # Prometheus
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - prometheus_data:/prometheus
+      - ./images/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - payway-network
+    restart: unless-stopped
 
-  # # Grafana для визуализации метрик
-  # grafana:
-  #   image: grafana/grafana-enterprise
-  #   ports:
-  #     - "3000:3000"
-  #   environment:
-  #     - GF_SECURITY_ADMIN_PASSWORD=admin
-  #     - GF_USERS_ALLOW_SIGN_UP=false
-  #   volumes:
-  #     - grafana_data:/var/lib/grafana
-  #   depends_on:
-  #     - prometheus
-  #   networks:
-  #     - payway-network
-  #   restart: unless-stopped
+  # Grafana для визуализации метрик
+  grafana:
+    image: grafana/grafana-enterprise
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - payway-network
+    restart: unless-stopped
 
 volumes:
   postgres_data:
