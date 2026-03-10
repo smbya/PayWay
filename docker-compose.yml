@@ -1,5 +1,4 @@
 services:
-
   # Dev контейнер для запуска sqlc, go mod и go run
   dev:
     build:
@@ -10,6 +9,18 @@ services:
     volumes:
       - ./app:/app
       - go-mod-cache:/go/pkg/mod
+    depends_on:
+      - db
+    networks:
+      - payway-network
+
+  # init project: create env, db migrations
+  init:
+    build:
+      context: .
+      dockerfile: images/Dockerfile.init
+    volumes:
+      - .:/project
     depends_on:
       - db
     networks:
@@ -31,10 +42,11 @@ services:
     depends_on:
       - db
       - kafka
+      - init
     networks:
       - payway-network
     restart: unless-stopped
-  
+
   # Callback Receiver
   callback:
     build:
@@ -51,6 +63,7 @@ services:
     depends_on:
       - db
       - kafka
+      - init
     networks:
       - payway-network
     restart: unless-stopped
@@ -69,6 +82,7 @@ services:
     depends_on:
       - db
       - kafka
+      - init
     networks:
       - payway-network
     restart: unless-stopped
@@ -87,6 +101,7 @@ services:
     depends_on:
       - db
       - kafka
+      - init
     networks:
       - payway-network
     restart: unless-stopped
@@ -139,20 +154,6 @@ services:
     restart: unless-stopped
     networks:
       - payway-network
-
-
-  # # Jaeger
-  # jaeger:
-  #   image: jaegertracing/all-in-one:latest
-  #   ports:
-  #     - "16686:16686"
-  #     - "14268:14268"
-  #     - "14250:14250"
-  #   environment:
-  #     - COLLECTOR_OTLP_ENABLED=true
-  #   networks:
-  #     - payway-network
-  #   restart: unless-stopped
 
   # Prometheus
   prometheus:
