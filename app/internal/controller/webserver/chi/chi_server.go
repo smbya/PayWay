@@ -9,6 +9,7 @@ import (
 	httphandler "payway/internal/controller/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 type chiServer struct {
@@ -28,6 +29,12 @@ func NewChiServer(port string, logger *slog.Logger, handler *httphandler.Payment
 }
 
 func (s *chiServer) registerRoutes(handler *httphandler.PaymentHandler) {
+
+	s.router.Get("/metrics", func(w http.ResponseWriter, r *http.Request) {
+		s.logger.Info("HTTP Request", "URL", r.URL.String(), "method", r.Method)
+		promhttp.Handler().ServeHTTP(w, r)
+	})
+
 	s.router.Post("/payments", func(w http.ResponseWriter, r *http.Request) {
 		s.logger.Info("HTTP Request", "URL", r.URL.String(), "method", r.Method)
 
